@@ -1,6 +1,9 @@
 package com.asct94.reigndemo.models
 
+import android.text.format.DateUtils
+import com.asct94.reigndemo.utils.toCalendar
 import com.google.gson.annotations.SerializedName
+import java.util.*
 
 data class Post(
     @SerializedName("title") val title: String?,
@@ -9,12 +12,15 @@ data class Post(
     @SerializedName("created_at") val createdAt: String,
 ) {
 
-    val fullTitle: String get() {
-        return title ?: storyTitle ?: "No Title Found"
-    }
+    val fullTitle: String
+        get() = title ?: storyTitle ?: "-"
 
-    val createTimeAgo: String get() {
-        return createdAt
-    }
+    val createTimeAgo: String
+        get() = DateUtils.getRelativeTimeSpanString(
+            createdAt.toCalendar().timeInMillis,
+            Calendar.getInstance().timeInMillis,
+            DateUtils.MINUTE_IN_MILLIS
+        ).toString()
+
 }
 

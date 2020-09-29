@@ -17,6 +17,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        swipe_refresh.setOnRefreshListener {
+            fetchList(false)
+        }
+
         rv_posts.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
@@ -27,6 +31,8 @@ class MainActivity : AppCompatActivity() {
         fetchList()
     }
 
+
+//    TODO: Separate Logic
 
     private fun fetchList(showLoading: Boolean = true) {
 
@@ -41,13 +47,11 @@ class MainActivity : AppCompatActivity() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
                 rv_posts.adapter = PostsAdapter(objList = it)
+                swipe_refresh.isRefreshing = false
                 Log.e("ASCT", it.count().toString())
-//                isLoading.value = false
-//                studyList.value = it
             }, {
-//                isLoading.value = false
-//                setError(it.message)
                 Log.e("ASCT", it.message)
+                swipe_refresh.isRefreshing = false
             })
 //        )
     }
