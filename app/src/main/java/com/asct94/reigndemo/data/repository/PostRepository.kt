@@ -18,7 +18,7 @@ class PostRepositoryImpl(
 ) : PostRepository {
 
     override fun listPosts(query: String?): Single<List<Post>> {
-        return postService.listPosts(query ?: "android").map { it.hits }
+        return postService.listPosts(query).map { it.hits }
     }
 
 }

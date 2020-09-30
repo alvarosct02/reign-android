@@ -1,4 +1,4 @@
-package com.asct94.reigndemo.ui.posts
+package com.asct94.reigndemo.ui.posts.list
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -27,4 +27,9 @@ class PostsAdapter(
     }
 
     override fun getItemCount() = objList.count()
+
+    fun setItems(newObjList: List<Post>) {
+        this.objList = newObjList
+        notifyDataSetChanged()
+    }
 }

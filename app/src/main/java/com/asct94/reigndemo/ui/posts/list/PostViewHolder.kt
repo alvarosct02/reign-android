@@ -1,4 +1,4 @@
-package com.asct94.reigndemo.ui.posts
+package com.asct94.reigndemo.ui.posts.list
 
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView

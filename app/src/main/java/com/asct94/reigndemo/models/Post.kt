@@ -10,6 +10,7 @@ data class Post(
     @SerializedName("story_title") val storyTitle: String?,
     @SerializedName("author") val author: String?,
     @SerializedName("created_at") val createdAt: String,
+    @SerializedName("story_url") val storyUrl: String,
 ) {
 
     val fullTitle: String
