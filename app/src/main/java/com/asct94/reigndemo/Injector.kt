@@ -4,13 +4,19 @@ import android.content.Context
 import android.content.Intent
 import com.asct94.reigndemo.data.source.api.PostService
 import com.asct94.reigndemo.data.source.api.RequestManager
+import com.asct94.reigndemo.data.source.local.AppDatabase
 
 class Injector private constructor(
-    val appContext: Context
+    private val appContext: Context
 ) {
 
+    val appDatabase: AppDatabase by lazy {
+        AppDatabase.init(appContext)
+        AppDatabase.getInstance()
+    }
+
     private val requestManager: RequestManager by lazy {
-        RequestManager("https://hn.algolia.com/api/v1/")
+        RequestManager(BuildConfig.BASE_URL)
     }
 
     val postService: PostService by lazy {

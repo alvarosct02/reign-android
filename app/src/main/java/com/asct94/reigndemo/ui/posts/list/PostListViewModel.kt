@@ -8,6 +8,7 @@ import com.asct94.reigndemo.models.Post
 import com.asct94.reigndemo.ui.base.BaseViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.TimeUnit
 
 
 class PostListViewModel(
@@ -16,8 +17,25 @@ class PostListViewModel(
 
     val postList: MutableLiveData<List<Post>> by lazy {
         MutableLiveData<List<Post>>().also {
-            fetchList()
+            fetchLocalList()
         }
+    }
+
+    private fun fetchLocalList() {
+        disposable.add(
+            postRepository.listLocalPosts()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    postList.value = it
+                    isLoading.value = false
+                    fetchList()
+                }, {
+                    Log.e("ASCT", it.message)
+                    isLoading.value = false
+                    fetchList()
+                })
+        )
     }
 
     private fun fetchList(showLoading: Boolean = true) {
@@ -26,6 +44,7 @@ class PostListViewModel(
 
         disposable.add(
             postRepository.listPosts(query = PostListFragment.FIXED_QUERY)
+                .delay(2, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
@@ -39,7 +58,11 @@ class PostListViewModel(
     }
 
     fun onPostRemoved(post: Post) {
-//        TODO: Delete the post
+        disposable.add(
+            postRepository.deletePost(post)
+                .subscribeOn(Schedulers.io())
+                .subscribe()
+        )
     }
 
     fun refresh(showLoading: Boolean = false) {
