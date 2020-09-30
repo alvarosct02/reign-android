@@ -38,6 +38,10 @@ class PostListViewModel(
         )
     }
 
+    fun onPostRemoved(post: Post) {
+//        TODO: Delete the post
+    }
+
     fun refresh(showLoading: Boolean = false) {
         fetchList(showLoading)
     }

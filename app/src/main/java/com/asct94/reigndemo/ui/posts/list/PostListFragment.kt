@@ -1,12 +1,17 @@
 package com.asct94.reigndemo.ui.posts.list
 
+import android.graphics.Canvas
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.asct94.reigndemo.R
@@ -18,6 +23,11 @@ import kotlinx.android.synthetic.main.fragment_post_list.*
 class PostListFragment : BaseFragment() {
 
     private val viewModel: PostListViewModel by activityViewModels()
+    private lateinit var postsAdapter: PostsAdapter
+
+    private lateinit var colorDrawableBackground: ColorDrawable
+    private lateinit var deleteIcon: Drawable
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,13 +44,60 @@ class PostListFragment : BaseFragment() {
             viewModel.refresh()
         }
 
+        colorDrawableBackground =
+            ColorDrawable(ContextCompat.getColor(requireContext(), R.color.red))
+        deleteIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_delete_sweep)!!
+
+        postsAdapter =  PostsAdapter(onItemClick = {
+            openDetailView(it)
+        }, onItemDeleted = {
+            viewModel.onPostRemoved(it)
+        })
+
+        val itemTouchHelperCallback =
+            object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.START) {
+                override fun onMove(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder,
+                    target: RecyclerView.ViewHolder
+                ): Boolean {
+                    return false
+                }
+
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    postsAdapter.removeItem(viewHolder.adapterPosition)
+                }
+
+                override fun onChildDraw(
+                    c: Canvas,
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder,
+                    dX: Float,
+                    dY: Float,
+                    actionState: Int,
+                    isCurrentlyActive: Boolean
+                ) {
+                    val itemView = viewHolder.itemView
+                    val iconMarginVertical = (viewHolder.itemView.height - deleteIcon.intrinsicHeight) / 2
+
+                    c.save()
+                    colorDrawableBackground.setBounds(itemView.left, itemView.top, itemView.right, itemView.bottom)
+                    deleteIcon.setBounds(itemView.right - iconMarginVertical - deleteIcon.intrinsicWidth, itemView.top + iconMarginVertical, itemView.right - iconMarginVertical, itemView.bottom - iconMarginVertical)
+                    c.clipRect(itemView.right + dX.toInt(), itemView.top, itemView.right, itemView.bottom)
+                    colorDrawableBackground.draw(c)
+                    deleteIcon.draw(c)
+                    c.restore()
+
+                    super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                }
+            }
+
         rv_posts.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.HORIZONTAL))
-            adapter = PostsAdapter(onItemClick = {
-                openDetailView(it)
-            })
+            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+            adapter = postsAdapter
+            ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(this)
         }
 
     }
@@ -49,7 +106,7 @@ class PostListFragment : BaseFragment() {
         super.setupVariables()
 
         viewModel.postList.observe(viewLifecycleOwner, {
-            (rv_posts.adapter as PostsAdapter).setItems(it)
+            postsAdapter.setItems(it)
         })
         viewModel.isLoading.observe(viewLifecycleOwner, {
             swipe_refresh.isRefreshing = it
