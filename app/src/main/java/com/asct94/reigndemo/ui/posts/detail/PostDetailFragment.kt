@@ -1,14 +1,15 @@
 package com.asct94.reigndemo.ui.posts.detail
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
 import androidx.core.view.isVisible
 import androidx.navigation.NavController
+import androidx.navigation.fragment.findNavController
 import com.asct94.reigndemo.R
 import com.asct94.reigndemo.models.Post
 import com.asct94.reigndemo.ui.base.BaseFragment
@@ -18,7 +19,7 @@ import kotlinx.android.synthetic.main.fragment_post_detail.*
 
 class PostDetailFragment : BaseFragment() {
 
-    private lateinit var postUrl: String
+    private var postUrl: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,7 +32,7 @@ class PostDetailFragment : BaseFragment() {
     override fun setupVariables() {
         super.setupVariables()
         val post = Gson().fromJson(requireArguments().getString(EXTRA_POST), Post::class.java)
-        postUrl = post.storyUrl ?: ""
+        postUrl = post.storyUrl
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -44,30 +45,27 @@ class PostDetailFragment : BaseFragment() {
                 super.onPageFinished(view, url)
                 pb_loading?.isVisible = false
             }
-
-            override fun onReceivedError(
-                view: WebView?,
-                request: WebResourceRequest?,
-                error: WebResourceError?
-            ) {
-                super.onReceivedError(view, request, error)
-                Log.e("ASCT", error.toString())
-            }
-
-            override fun onReceivedHttpError(
-                view: WebView?,
-                request: WebResourceRequest?,
-                errorResponse: WebResourceResponse?
-            ) {
-                super.onReceivedHttpError(view, request, errorResponse)
-                Log.e("ASCT", errorResponse.toString())
-            }
         }
-        wv_content.loadUrl(postUrl)
+        postUrl.takeUnless { it.isNullOrEmpty() }?.also { wv_content.loadUrl(it) } ?: showError()
 
     }
 
-//    TODO: Handle no_url provided & loading error
+    private fun showError() {
+        wv_content?.isVisible = false
+        pb_loading?.isVisible = false
+
+        val alertDialog = AlertDialog.Builder(requireContext())
+            .setTitle(R.string.app_name)
+            .setMessage(R.string.message_web_detail_error)
+            .setIcon(R.drawable.ic_logo)
+            .setPositiveButton(R.string.label_ok) { _, _ ->
+                findNavController().navigateUp()
+            }
+            .create()
+
+        alertDialog.setCancelable(false)
+        alertDialog.show()
+    }
 
     companion object {
 

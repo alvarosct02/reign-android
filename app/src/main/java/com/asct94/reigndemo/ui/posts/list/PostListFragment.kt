@@ -163,7 +163,6 @@ class PostListFragment : BaseFragment() {
         }
 
     private fun openDetailView(post: Post) {
-//      TODO: Validate if there's no internet
         PostDetailFragment.newInstance(findNavController(), post)
     }
 

@@ -31,7 +31,7 @@ class PostRepositoryImpl(
     override fun listPosts(page: Int): Single<List<Post>> {
         return postService.listPosts(query = "android", pageSize = PAGE_SIZE, page = page)
             .map {
-//                This really impacts on performance but the API was returning null on storyIds
+//                TODO: Refactor. This really impacts on performance but the API was returning null on storyIds
                 it.hits.map { p -> Post.fromRaw(p) }
             }
             .map { postDao.insertAll(it) }

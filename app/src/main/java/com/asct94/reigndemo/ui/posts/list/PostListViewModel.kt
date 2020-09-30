@@ -36,7 +36,6 @@ class PostListViewModel(
                     isLoading.value = false
                     refresh()
                 }, {
-                    Log.e("ASCT", it.message)
                     isLoading.value = false
                     refresh()
                 })
@@ -50,7 +49,6 @@ class PostListViewModel(
 
         disposable.add(
             postRepository.listPosts(page = page)
-                .delay(2, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
@@ -59,7 +57,6 @@ class PostListViewModel(
                     isLoadingMore.value = false
                     currentPage.value = page
                 }, {
-                    Log.e("ASCT", it.message)
                     isLoading.value = false
                     isLoadingMore.value = false
                 })
