@@ -9,19 +9,22 @@ data class Post(
     @SerializedName("title") val title: String?,
     @SerializedName("story_title") val storyTitle: String?,
     @SerializedName("author") val author: String?,
-    @SerializedName("created_at") val createdAt: String,
-    @SerializedName("story_url") val storyUrl: String,
+    @SerializedName("created_at") val createdAt: String?,
+    @SerializedName("story_url") val storyUrl: String?,
 ) {
 
     val fullTitle: String
         get() = title ?: storyTitle ?: "-"
 
     val createTimeAgo: String
-        get() = DateUtils.getRelativeTimeSpanString(
-            createdAt.toCalendar().timeInMillis,
-            Calendar.getInstance().timeInMillis,
-            DateUtils.MINUTE_IN_MILLIS
-        ).toString()
+        get() {
+            if (createdAt == null) return "???"
+            return DateUtils.getRelativeTimeSpanString(
+                createdAt.toCalendar().timeInMillis,
+                Calendar.getInstance().timeInMillis,
+                DateUtils.MINUTE_IN_MILLIS
+            ).toString()
+        }
 
 }
 
