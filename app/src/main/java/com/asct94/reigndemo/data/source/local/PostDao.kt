@@ -16,8 +16,8 @@ interface PostDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertAll(entityList: List<Post>)
 
-    @Query("SELECT * FROM Post WHERE deleted = 0 ORDER BY substr(createdAt,7,4)||substr(createdAt,4,2)||substr(createdAt,1,2)||substr(createdAt,11,8) DESC")
-    fun getAll(): Single<List<Post>>
+    @Query("SELECT * FROM Post WHERE deleted = 0 ORDER BY createdAt DESC LIMIT :limit")
+    fun getAll(limit: Int): Single<List<Post>>
 
     @Query("UPDATE Post SET deleted = 1 WHERE id = :id")
     fun deleteById(id: Long)

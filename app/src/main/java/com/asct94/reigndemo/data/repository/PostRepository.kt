@@ -10,7 +10,7 @@ import io.reactivex.Single
 
 interface PostRepository {
 
-    fun listPosts(query: String? = null): Single<List<Post>>
+    fun listPosts(page: Int = 0): Single<List<Post>>
 
     fun listLocalPosts(): Single<List<Post>>
 
@@ -25,14 +25,17 @@ class PostRepositoryImpl(
     ) : PostRepository {
 
     override fun listLocalPosts(): Single<List<Post>> {
-        return postDao.getAll()
+        return postDao.getAll(PAGE_SIZE_FRONT)
     }
 
-    override fun listPosts(query: String?): Single<List<Post>> {
-        return postService.listPosts(query)
-            .map { it.hits }
+    override fun listPosts(page: Int): Single<List<Post>> {
+        return postService.listPosts(query = "android", pageSize = PAGE_SIZE, page = page)
+            .map {
+//                This really impacts on performance but the API was returning null on storyIds
+                it.hits.map { p -> Post.fromRaw(p) }
+            }
             .map { postDao.insertAll(it) }
-            .flatMap { postDao.getAll() }
+            .flatMap { postDao.getAll(limit = PAGE_SIZE_FRONT * (page + 1)) }
     }
 
     override fun deletePost(post:Post): Completable {
@@ -40,5 +43,10 @@ class PostRepositoryImpl(
             postDao.deleteById(post.id)
             Completable.complete()
         }
+    }
+
+    companion object {
+        const val PAGE_SIZE = 50
+        const val PAGE_SIZE_FRONT = 30
     }
 }

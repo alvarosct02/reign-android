@@ -21,6 +21,11 @@ class PostListViewModel(
         }
     }
 
+    val isLoadingMore = MutableLiveData(false)
+
+    private val currentPage = MutableLiveData(0)
+    private val safePage get() = currentPage.value ?: 0
+
     private fun fetchLocalList() {
         disposable.add(
             postRepository.listLocalPosts()
@@ -29,30 +34,34 @@ class PostListViewModel(
                 .subscribe({
                     postList.value = it
                     isLoading.value = false
-                    fetchList()
+                    refresh()
                 }, {
                     Log.e("ASCT", it.message)
                     isLoading.value = false
-                    fetchList()
+                    refresh()
                 })
         )
     }
 
-    private fun fetchList(showLoading: Boolean = true) {
+    private fun fetchList(page: Int, showRefreshing: Boolean, showLoadingMore: Boolean) {
 
-        if (showLoading) isLoading.value = true
+        if (showRefreshing) isLoading.value = true
+        if (showLoadingMore) isLoadingMore.value = true
 
         disposable.add(
-            postRepository.listPosts(query = PostListFragment.FIXED_QUERY)
+            postRepository.listPosts(page = page)
                 .delay(2, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
                     postList.value = it
                     isLoading.value = false
+                    isLoadingMore.value = false
+                    currentPage.value = page
                 }, {
                     Log.e("ASCT", it.message)
                     isLoading.value = false
+                    isLoadingMore.value = false
                 })
         )
     }
@@ -65,8 +74,14 @@ class PostListViewModel(
         )
     }
 
-    fun refresh(showLoading: Boolean = false) {
-        fetchList(showLoading)
+    fun refresh() {
+        fetchList(page = 0, showRefreshing = true, showLoadingMore = false)
+    }
+
+    fun loadMorePosts() {
+        fetchList(page = safePage + 1, showRefreshing = false, showLoadingMore = true)
+
+//        fetchList()
     }
 
 

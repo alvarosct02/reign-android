@@ -9,7 +9,9 @@ interface PostService {
 
     @GET("search_by_date")
     fun listPosts(
-        @Query("query") query: String?
+        @Query("query") query: String?,
+        @Query("page") page: Int?,
+        @Query("hitsPerPage") pageSize: Int?
     ): Single<PostWrapper>
 
 }
